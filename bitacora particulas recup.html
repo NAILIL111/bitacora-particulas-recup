@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bitácora Electrónica – FEUM Partículas (V7q • Final CORR)</title>
+<style>
+  :root{--als-blue:#002D62;--als-green:#3BA935;--als-gray:#E5E5E5;--line:#D3D7DB;--bg:#FFFFFF;--warn:#fd7e14}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:#000;font:14px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Arial}
+  header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:2px solid var(--als-blue);background:#F9FAFB;position:sticky;top:0;z-index:10}
+  .brand{display:flex;align-items:center;gap:12px}
+  .brand img{height:42px;width:auto;border-radius:6px;border:1px solid var(--line);background:#fff}
+  .brand h1{margin:0;font-size:18px;color:#002D62}
+  .actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  button{border:1px solid var(--line);background:#fff;color:#000;padding:8px 10px;border-radius:10px;cursor:pointer}
+  button.primary{background:var(--als-blue);color:#fff;border-color:var(--als-blue)}
+  button.warn{background:var(--warn);color:#fff;border-color:#c35d00}
+  button.ok{background:var(--als-green);color:#fff;border-color:#2d8b2a}
+  button.ghost{background:#fff;color:#002D62;border-color:#002D62}
+  button[disabled]{opacity:0.5;cursor:not-allowed}
+  .badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;border:1px solid var(--line);font-size:12px;background:#fff}
+  .chip{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:12px;border:1px solid var(--line);background:#fff}
+  .chip.pass{background:#E9F8ED;border-color:#A6E3B6;color:#115e30}
+  .chip.fail{background:#FFF2F0;border-color:#FFB3A7;color:#8a1b10}
+  main{padding:16px;max-width:1100px;margin:0 auto;position:relative}
+  section{border:1px solid var(--line);border-radius:12px;margin:12px 0;padding:12px;background:#fff}
+  h2{font-size:16px;margin:0 0 8px 0;color:#002D62}
+  label{font-size:12px;color:#4B5563}
+  input,textarea,select{width:100%;padding:8px;border:1px solid var(--line);border-radius:10px;background:#fff;color:#000}
+  input[type='number']{text-align:right}
+  table{width:100%;border-collapse:collapse}
+  th,td{border:1px solid var(--line);padding:6px;vertical-align:top}
+  th{background:#F2F5F8;text-align:left}
+  .grid{display:grid;gap:8px}
+  .g2{grid-template-columns:repeat(2,1fr)}
+  .g3{grid-template-columns:repeat(3,1fr)}
+  .g4{grid-template-columns:repeat(4,1fr)}
+  .mono{font-family:ui-monospace,Consolas,Menlo,monospace}
+  .mstep{margin:6px 0 10px 0;padding:8px;border:1px dashed var(--line);border-radius:10px;background:#FCFCFC}
+  .criteria-banner{border:1px solid #bcd;background:#F1F7FF;color:#0b2e53;border-radius:8px;padding:8px;margin:6px 0 10px 0}
+  .ops{border:1px dashed var(--line);border-radius:8px;padding:8px;margin-top:8px;background:#FCFCFC}
+  .formula{border:1px solid #d4d7dc;border-radius:10px;padding:10px;margin-top:6px;background:#FDFDFE}
+  .fx{font-family:Cambria, Georgia, 'Times New Roman', serif; font-size:16px; text-align:center}
+  .results-box{border:2px solid var(--als-blue);border-radius:10px;padding:10px;background:#FAFBFF}
+  .pass{background:#E9F8ED;border-color:#A6E3B6}
+  .fail{background:#FFF2F0;border-color:#FFB3A7}
+  canvas.sign{border:1px dashed var(--line);border-radius:8px;background:#fff;width:100%;height:120px;touch-action:none;cursor:crosshair}
+  .sign-row{display:flex;gap:8px;align-items:center}
+  .sign-ctrls{display:flex;flex-direction:column;gap:6px;min-width:120px}
+  .audit-scroll{overflow:auto}
+  .audit-table{min-width:980px}
+  td.hash-full{font-family:ui-monospace,Consolas,Menlo,monospace;font-size:12px;overflow-wrap:anywhere;word-break:break-word}
+  @media print{
+    header,.no-print{display:none!important}
+    body{background:#fff}
+    section{break-inside:avoid-page}
+    main{max-width:none}
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <img src="https://alsglobal.sharepoint.com/sites/Marketing/BrandGuidelines/Downloads/Logo/PNG/4x/RGB-ALS-LogoCircle-Blue@4x.png?csf=1&web=1&e=C1fq2B" alt="ALS" title="ALS" onerror="this.onerror=null;this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'84\' height=\'84\'><rect width=\'100%\' height=\'100%\' rx=\'10\' ry=\'10\' fill=\'%23002D62\'/><text x=\'50%\' y=\'55%\' font-family=\'Arial,Helvetica,sans-serif\' font-weight=\'700\' font-size=\'28\' fill=\'%23fff\' text-anchor=\'middle\'>ALS</text></svg>'">
+    <h1>Bitácora Electrónica – FEUM Partículas</h1>
+  </div>
+  <div class="actions no-print">
+    <button id="btnNew">Nueva bitácora</button>
+    <button id="btnHistory">Historial</button>
+    <span class="badge" id="badgeCount">Archivados: 0</span>
+    <button class="primary" id="btnSave" title="Guardar en este navegador">Guardar</button>
+    <button id="btnLoad">Cargar</button>
+    <button class="warn" id="btnClear">Limpiar</button>
+    <button class="ghost" id="btnLock">Bloquear y firmar</button>
+    <button class="ok" id="btnCorrection" disabled>Nueva corrección</button>
+    <button class="ok" id="btnPrint" onclick="window.print()">Imprimir/PDF</button>
+    <button id="btnExportJSON">Exportar JSON</button>
+  </div>
+</header>
+
+<main id="main">
+  <!-- Identificación -->
+  <section>
+    <h2>Bitácora Electrónica (BE)</h2>
+    <div class="grid g4">
+      <div><label>Folio</label><input data-field="folio"></div>
+      <div><label>F. Informativa</label><input type="date" data-field="f_informativa"></div>
+      <div><label>Cliente</label><input data-field="cliente" id="cliente"></div>
+      <div><label>Producto</label><input data-field="producto"></div>
+    </div>
+    <div class="grid g2" style="margin-top:8px">
+      <div><label>Prueba</label><input data-field="prueba" value="Partículas microscópicas"></div>
+      <div><label>Referencia bibliográfica</label><textarea data-field="ref_biblio" rows="2" placeholder="Ej. FEUM 13, p. 484; USP &lt;788&gt;; SOP interno..."></textarea></div>
+    </div>
+    <div class="grid g3" style="margin-top:8px">
+      <div><label>Estado</label><input id="estado" value="Abierta" readonly></div>
+      <div><label>Sello digital (hash SHA-256)</label><input id="hash"></div>
+      <div><label>Cadena auditoría (hash)</label><input id="chain"></div>
+    </div>
+  </section>
+
+  <!-- Inicio del análisis -->
+  <section>
+    <h2>Inicio del análisis</h2>
+    <div class="grid g2">
+      <div><label>Fecha de inicio</label><input data-field="fecha_inicio" id="fecha_inicio" readonly placeholder="AAAA-MM-DD"></div>
+      <div><label>Hora de inicio</label><input data-field="hora_inicio" id="hora_inicio" readonly placeholder="HH:MM"></div>
+    </div>
+    <div class="no-print" style="margin-top:6px"><button type="button" class="ghost" id="btnMarkInicio">Marcar inicio (ahora)</button></div>
+  </section>
+
+  <!-- Especificación de la prueba -->
+  <section>
+    <h2>Especificación de la prueba</h2>
+    <div class="criteria-banner">
+      <strong>Partículas microscópicas</strong><br>
+      ≥10 µm: ≤ 6 000 part/cont • ≥25 µm: ≤ 600 part/cont
+    </div>
+  </section>
+
+  <!-- Desarrollo analítico -->
+  <section>
+    <h2>Desarrollo analítico –  Determinación de partículas en soluciones inyectables. Método 1, Obstrucción de luz.</h2>
+
+    <!-- Equipos y/o instrumentos -->
+    <div>
+    <h3>Equipos y/o instrumentos</h3>
+    <table id="equipTable">
+      <thead>
+        <tr>
+          <th>Nombre</th><th>Clave</th><th>Servicio</th><th>Fecha Servicio</th><th>Fecha próximo servicio</th><th>Estatus (auto)</th>
+        </tr>
+      </thead>
+      <tbody id="equipBody">
+        <tr>
+          <td><input data-field="eq_1_nombre" value="Campana de flujo laminar"></td>
+          <td>
+            <div style='display:flex;align-items:center;gap:6px'>
+              <span class="mono">CFL-</span>
+              <input data-field="eq_1_clave_suf" style="max-width:120px" placeholder="sufijo">
+              <input data-field="eq_1_clave" type="hidden">
+            </div>
+          </td>
+          <td><select data-field="eq_1_servicio"><option></option><option>Calificación</option><option>Verificación</option><option>Calibración</option><option>NA</option></select></td>
+          <td><input type="date" data-field="eq_1_fserv" data-past-only></td>
+          <td><input type="date" data-field="eq_1_fprox" data-future-only></td>
+          <td>
+            <select data-field="eq_1_estatus" class="estatus-auto" disabled>
+              <option value=""></option>
+              <option>Vigente</option>
+              <option>No vigente</option>
+              <option>NA</option>
+            </select>
+          </td>
+        </tr>
+    
+        <tr>
+          <td><input data-field="eq_2_nombre" value="Sistema medidor de partículas"></td>
+          <td>
+            <div style='display:flex;align-items:center;gap:6px'>
+              <span class="mono">SMP-</span>
+              <input data-field="eq_2_clave_suf" style="max-width:120px" placeholder="sufijo">
+              <input data-field="eq_2_clave" type="hidden">
+            </div>
+          </td>
+          <td><select data-field="eq_2_servicio"><option></option><option>Calificación</option><option>Verificación</option><option>Calibración</option><option>NA</option></select></td>
+          <td><input type="date" data-field="eq_2_fserv" data-past-only></td>
+          <td><input type="date" data-field="eq_2_fprox" data-future-only></td>
+          <td>
+            <select data-field="eq_2_estatus" class="estatus-auto" disabled>
+              <option value=""></option>
+              <option>Vigente</option>
+              <option>No vigente</option>
+              <option>NA</option>
+            </select>
+          </td>
+        </tr>
+    
+        <tr>
+          <td><input data-field="eq_3_nombre" value="Cronómetro"></td>
+          <td>
+            <div style='display:flex;align-items:center;gap:6px'>
+              <span class="mono">CRO-</span>
+              <input data-field="eq_3_clave_suf" style="max-width:120px" placeholder="sufijo">
+              <input data-field="eq_3_clave" type="hidden">
+            </div>
+          </td>
+          <td><select data-field="eq_3_servicio"><option></option><option>Calificación</option><option>Verificación</option><option>Calibración</option><option>NA</option></select></td>
+          <td><input type="date" data-field="eq_3_fserv" data-past-only></td>
+          <td><input type="date" data-field="eq_3_fprox" data-future-only></td>
+          <td>
+            <select data-field="eq_3_estatus" class="estatus-auto" disabled>
+              <option value=""></option>
+              <option>Vigente</option>
+              <option>No vigente</option>
+              <option>NA</option>
+            </select>
+          </td>
+        </tr>
+    
+        <tr>
+          <td><input data-field="eq_4_nombre" value="Bomba de filtración"></td>
+          <td>
+            <div style='display:flex;align-items:center;gap:6px'>
+              <span class="mono">BFI-</span>
+              <input data-field="eq_4_clave_suf" style="max-width:120px" placeholder="sufijo">
+              <input data-field="eq_4_clave" type="hidden">
+            </div>
+          </td>
+          <td><select data-field="eq_4_servicio"><option></option><option>Calificación</option><option>Verificación</option><option>Calibración</option><option>NA</option></select></td>
+          <td><input type="date" data-field="eq_4_fserv" data-past-only></td>
+          <td><input type="date" data-field="eq_4_fprox" data-future-only></td>
+          <td>
+            <select data-field="eq_4_estatus" class="estatus-auto" disabled>
+              <option value=""></option>
+              <option>Vigente</option>
+              <option>No vigente</option>
+              <option>NA</option>
+            </select>
+          </td>
+        </tr>
+    
+        <tr>
+          <td><input data-field="eq_5_nombre" value="Baño de ultrasonido"></td>
+          <td>
+            <div style='display:flex;align-items:center;gap:6px'>
+              <span class="mono">BUL-</span>
+              <input data-field="eq_5_clave_suf" style="max-width:120px" placeholder="sufijo">
+              <input data-field="eq_5_clave" type="hidden">
+            </div>
+          </td>
+          <td><select data-field="eq_5_servicio"><option></option><option>Calificación</option><option>Verificación</option><option>Calibración</option><option>NA</option></select></td>
+          <td><input type="date" data-field="eq_5_fserv" data-past-only></td>
+          <td><input type="date" data-field="eq_5_fprox" data-future-only></td>
+          <td>
+            <select data-field="eq_5_estatus" class="estatus-auto" disabled>
+              <option value=""></option>
+              <option>Vigente</option>
+              <option>No vigente</option>
+              <option>NA</option>
+            </select>
+          </td>
+        </tr>
+    
+      </tbody>
+    </table>
+    <div class="no-print" style="margin-top:8px"><button class="ghost" id="btnAddEquip">+ Agregar fila</button> <button class="ghost" id="btnDelEquip">- Borrar fila</button></div>
+    </div>
+
+    <!-- Materiales (ajustado) -->
+    <div class="mstep">
+      <h3 style="margin:0 0 6px 0">Materiales</h3>
+      <div style="font-size:13px;color:#374151;margin-bottom:6px">
+        Material de vidrio verificado con agua inyectable libre de partículas.
+      </div>
+      <div style="margin-bottom:8px">
+        <label>Fecha de verificación de material</label>
+        <div style="display:flex;gap:8px;align-items:center"><input type="date" data-field="mat_verif_fecha"><button type="button" class="ghost" id="btnMarkVerifMat">Marcar verificación (hoy)</button></div>
+      </div>
+      <table>
+        <thead><tr><th>Insumo</th><th>Lote</th><th>Caducidad</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Membrana para filtración (tamaño de poro 0.22 µm)</td>
+            <td><input data-field="insumo_membrana_lote"></td>
+            <td><input type="date" data-field="insumo_membrana_cad"></td>
+          </tr>
+          <tr>
+            <td>Agua inyectable libre de partículas</td>
+            <td><input data-field="reactivo_agua_clave" placeholder="Clave"></td>
+            <td><input type="date" data-field="reactivo_agua_cad" placeholder="Caducidad"></td>
+          </tr>
+        </tbody>
+      </table>
+      <div style="font-size:12px;color:#374151;margin-top:6px"><em>Agua inyectable previamente filtrada con membrana de poro de 0.22 µm.</em></div>
+    </div>
+
+    <!-- Blanco -->
+    <div class="mstep">
+      <strong>Blanco:</strong>
+      <div class="criteria-banner"><strong>Criterios de aceptación:</strong> Las condiciones ambientales cumplen si el resultado del conteo de partículas para el blanco y la verificación del material de vidrio es de: No excede 10 partículas ≥10 µm y no excede 2 partículas ≥25 µm.</div>
+      <div style="margin:6px 0"><strong>Preparación del blanco:</strong><br>1. Colocar en un frasco de vidrio libre de partículas 50 mL de agua inyectable libre de partículas, homogenizar por inversión del frasco y dejar reposar por 2 minutos para eliminar las burbujas de aire.</div>
+    </div>
+
+    <!-- Muestra -->
+    <div class="mstep">
+      <strong>Muestra:</strong>
+      <div><strong>Preparación de la muestra:</strong></div>
+      <ol>
+        <li>Retirar el empaque secundario, etiquetas, sellos de aluminio o plástico, tapones que no se encuentren en contacto directo con la muestra. Enjuagar el exterior de las muestras con agua inyectable libre de partículas antes de ingresarlos a la campana de flujo laminar.</li>
+        <li>Homogenizar cada una de las muestras invirtiéndolas suavemente 20 veces, retirar la tapa o tapón y verter el contenido en un frasco de vidrio libre de partículas. Realizar un pool con <input class="mono" style="width:70px" data-field="pool_n" id="n" type="number" min="1" step="1"> muestras de <input class="mono" style="width:70px" data-field="pool_v" id="v" type="number" min="0" step="0.1"> mL cada una, obteniendo un volumen total de <input class="mono" style="width:90px" data-field="pool_vt" id="vt" type="number" step="0.1" readonly> mL.</li>
+        <li>Desgasificar la solución combinada por un baño de ultrasonido durante 30 segundos o dejar reposar hasta que la solución no presente burbujas de aire.</li>
+        <li>
+          Hora de sonicación:
+          <div class="grid g3" style="margin-top:6px">
+            <div>
+              <label>Inicio</label>
+              <div style="display:flex;gap:6px;align-items:center">
+                <input type="datetime-local" data-field="t_son_i" id="t_son_i" readonly step="1">
+                <button type="button" class="ghost" id="btnMarkStart">Marcar inicio (ahora)</button>
+              </div>
+            </div>
+            <div>
+              <label>Fin</label>
+              <div style="display:flex;gap:6px;align-items:center">
+                <input type="datetime-local" data-field="t_son_f" id="t_son_f" readonly step="1">
+                <button type="button" class="ghost" id="btnMarkEnd">Marcar fin (ahora)</button>
+              </div>
+            </div>
+            <div>
+              <label>Duración calculada (s)</label>
+              <input data-field="t_son_dur" id="t_son_dur" type="number" readonly placeholder="0">
+            </div>
+          </div>
+        </li>
+        <li>Agitar ligeramente el contenido del recipiente por rotación, a mano o mecánicamente, teniendo cuidado de no introducir burbujas de aire o contaminación.</li>
+      </ol>
+      
+    </div>
+  </section>
+
+  <!-- Condiciones operacionales -->
+  <section>
+    <h2>Condiciones operacionales</h2>
+    <div class="ops">
+      <div class="grid g3" style="margin-top:6px">
+        <div><label>Velocidad de la campana de flujo laminar (m/s)</label><input data-field="vel_campana" id="vel_campana"></div>
+        <div><label>Especificación</label><input value="0.36 – 0.54 m/s" readonly></div>
+        <div style="display:flex;align-items:flex-end"><span id="opsChip" class="chip">Estatus: —</span></div>
+      </div>
+    </div>
+  </section>
+  <!-- Lectura en Sistema Medidor de Partículas -->
+  <section>
+    <h2>Lectura del blanco y muestra en el Sistema Medidor de Partículas</h2>
+    <div class="mstep">
+      <strong>Blanco:</strong>
+      <ol>
+        <li>Programar el equipo para que realice 3 alícuotas de 5.0 mL, descartando la primer alícuota.</li>
+        <li>Una vez concluido el tiempo de reposo agitar suavemente el frasco evitando generar burbujas.</li>
+        <li>Destapar el frasco e introducir cuidadosamente la sonda de muestreo e iniciar con el análisis en el equipo.</li>
+      </ol>
+    </div>
+    <div class="mstep">
+      <strong>Muestra:</strong>
+      <ol>
+        <li>Programar el equipo para que realice 4 alícuotas de 5.0 mL descartando los valores de la primer alícuota.</li>
+        <li>Una vez concluido el tiempo de reposo agitar suavemente la muestra evitando generar burbujas.</li>
+        <li>Destapar el frasco e introducir cuidadosamente la sonda de muestreo e iniciar con el análisis en el equipo.</li>
+      </ol>
+    </div>
+    <div class="mstep">
+      <strong>Resultados: Lectura de blanco y muestra</strong>
+      <!-- Lecturas del blanco -->
+      <div class="grid g3" style="margin-top:8px">
+        <div><label>Blanco ≥10 µm</label><input data-field="blanco_10" id="blanco_10" type="number" min="0" step="1"></div>
+        <div><label>Blanco ≥25 µm</label><input data-field="blanco_25" id="blanco_25" type="number" min="0" step="1"></div>
+        <div>
+          <label>Blanco (auto)</label>
+          <div style="display:flex;gap:8px;align-items:center">
+            <span id="blancoChip" class="chip">—</span>
+            <span style="font-size:12px;color:#475569">Regla: ≥10 µm ≤ 10 y ≥25 µm ≤ 2 (cálculo en automático)</span>
+          </div>
+        </div>
+      </div>
+      <!-- Lecturas de la muestra (debajo del blanco) -->
+      <div class="grid g3" style="margin-top:8px">
+        <div><label>P promedio muestra ≥10 µm</label><input data-field="p_avg_10" id="p_avg_10" type="number" min="0" step="1"></div>
+        <div><label>P promedio muestra ≥25 µm</label><input data-field="p_avg_25" id="p_avg_25" type="number" min="0" step="1"></div>
+        <div><label>VA (mL)</label><input data-field="va" id="va" value="5.0" type="number" step="0.1" min="0"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Fórmulas -->
+  <section>
+    <h2>Fórmulas</h2>
+    <div class="formula">
+      <div class="fx">Partículas por envase = ( <b>P</b> / <b>VA</b> ) × ( <b>Vt</b> / <b>n</b> )</div>
+      <div class="grid g4" style="margin-top:8px">
+        <div><b>P:</b> Partículas promedio (Average del equipo)</div>
+        <div><b>VA:</b> Volumen de la alícuota (mL)</div>
+        <div><b>Vt:</b> Volumen total del pool (mL)</div>
+        <div><b>n:</b> Número de muestras combinadas</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Resultados de muestra -->
+  <section>
+    <h2>Resultados de muestra</h2>
+    <div class="grid g2">
+      <div><label>≥10 µm (part./contenedor)</label><input data-field="res_10_final" id="res_10_final" readonly></div>
+      <div><label>≥25 µm (part./contenedor)</label><input data-field="res_25_final" id="res_25_final" readonly></div>
+    </div>
+    <div class="results-box" id="resultsBox" style="margin-top:10px">
+      <strong>Resultados: Partículas microscópicas</strong><br>
+      ≥10 µm: <span id="res10_out" class="mono">—</span> part/cont<br>
+      ≥25 µm: <span id="res25_out" class="mono">—</span> part/cont
+    </div>
+  </section>
+
+  <!-- Firmas -->
+  <section>
+    <h2>Firmas</h2>
+    <table>
+      <thead><tr><th>Rol</th><th>Nombre</th><th>Firma</th><th>Fecha y hora</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>Realizó (Analista)</td>
+          <td><input data-field="analista" id="analista"></td>
+          <td>
+            <div class="sign-row">
+              <canvas class="sign" id="signA"></canvas>
+              <div class="sign-ctrls no-print">
+                <button type="button" class="ghost" id="clrA">Limpiar firma</button>
+              </div>
+            </div>
+          </td>
+          <td>
+            <input type="datetime-local" data-field="fin_analisis" id="fin_analisis" readonly step="1">
+            <div style="margin-top:6px"><button type="button" id="btnMarkSignA">Marcar firma (ahora)</button></div>
+          </td>
+        </tr>
+        <tr>
+          <td>Revisó (Supervisor/Jefe)</td>
+          <td><input data-field="revisor"></td>
+          <td>
+            <div class="sign-row">
+              <canvas class="sign" id="signR"></canvas>
+              <div class="sign-ctrls no-print">
+                <button type="button" class="ghost" id="clrR">Limpiar firma</button>
+              </div>
+            </div>
+          </td>
+          <td>
+            <input type="datetime-local" data-field="rev_dt" id="rev_dt" readonly step="1">
+            <div style="margin-top:6px"><button type="button" id="btnMarkSignR">Marcar firma (ahora)</button></div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- Trazabilidad -->
+  <section id="auditSection">
+    <h2>Trazabilidad</h2>
+    <div class="audit-scroll">
+      <table class="audit-table">
+        <thead><tr><th>Fecha/Hora</th><th>Usuario</th><th>Acción</th><th>Detalle</th><th>Hash (SHA-256 completo)</th></tr></thead>
+        <tbody id="auditTable"></tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<script>
+/**********************
+ * Bitácora FEUM – Runtime JS (estable)
+ * - Vista previa interactiva; almacenamiento seguro si localStorage no está disponible.
+ * - Bloqueo ALCOA+, impresión habilitada en bloqueo.
+ **********************/
+
+// ===== Helpers de selección
+const PREVIEW=(function(){ try{ return window.self !== window.top; }catch(e){ return true; } })();
+const $ = (q)=>document.querySelector(q);
+const $$ = (q)=>Array.from(document.querySelectorAll(q));
+
+// ===== Almacenamiento seguro (soporta sandbox sin localStorage)
+const SafeLS = (()=>{
+  let mem = {};
+  const hasLS = (()=>{ try{ const k='__t'; localStorage.setItem(k,'1'); localStorage.removeItem(k); return true; }catch(e){ return false; } })();
+  return {
+    getItem(k){ try{ return hasLS? localStorage.getItem(k) : (k in mem? mem[k] : null); }catch(e){ return null; } },
+    setItem(k,v){ try{ if(hasLS) localStorage.setItem(k,v); else mem[k]=String(v); }catch(e){} },
+    removeItem(k){ try{ if(hasLS) localStorage.removeItem(k); else delete mem[k]; }catch(e){} }
+  };
+})();
+
+// ===== Namespaces/keys
+const FILE_ID=(location.pathname.split('/').pop()||'bv').replace(/[^A-Za-z0-9_]+/g,'_').toLowerCase();
+const NS='bv_feum_als_v7q_'+FILE_ID;
+const STORE=NS+'_data', AUDIT=NS+'_audit', LOCK=NS+'_lock', LOCK_META=NS+'_lock_meta';
+
+// ===== Canvas firmas (HiDPI)
+function setupHiDPICanvas(c){ const dpr=window.devicePixelRatio||1; const r=c.getBoundingClientRect(); c.width=Math.round(r.width*dpr); c.height=Math.round(r.height*dpr); const ctx=c.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0); ctx.lineWidth=2; ctx.lineCap='round'; return ctx; }
+function attachSignPad(id){ const c=document.getElementById(id); if(!c) return; let ctx=setupHiDPICanvas(c); let draw=false,last=[0,0];
+  const pt=e=>{const r=c.getBoundingClientRect(); const t=e.touches?e.touches[0]:e; return [t.clientX-r.left,t.clientY-r.top]};
+  const start=e=>{ if(SafeLS.getItem(LOCK)==='1') return; draw=true; last=pt(e); e.preventDefault(); };
+  const move=e=>{ if(!draw||SafeLS.getItem(LOCK)==='1') return; const [x,y]=pt(e); ctx.beginPath(); ctx.moveTo(last[0],last[1]); ctx.lineTo(x,y); ctx.stroke(); ctx.closePath(); last=[x,y]; e.preventDefault(); };
+  const end=()=>{ if(!draw) return; draw=false; updateSeals().catch(()=>{}); };
+  window.addEventListener('resize', ()=>{ ctx=setupHiDPICanvas(c); });
+  c.addEventListener('mousedown',start); c.addEventListener('mousemove',move); window.addEventListener('mouseup',end);
+  c.addEventListener('touchstart',start,{passive:false}); c.addEventListener('touchmove',move,{passive:false}); c.addEventListener('touchend',end);
+}
+function clearSignature(id){ const c=document.getElementById(id); if(!c) return; if(SafeLS.getItem(LOCK)==='1'){ alert('Bitácora bloqueada: no es posible limpiar firmas.'); return; } const ctx=c.getContext('2d'); ctx.clearRect(0,0,c.width,c.height); setupHiDPICanvas(c); updateSeals().catch(()=>{}); }
+
+// ===== Fechas
+function parseDate(s){ if(!s) return null; const [Y,M,D]=s.split('-').map(Number); return new Date(Y, M-1, D); }
+function fmtDate(d){ return d?`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`:''; }
+function analysisDate(){ const v=$('#fecha_inicio')?.value; return parseDate(v) || new Date(); }
+
+// === Now con segundos (YYYY-MM-DDTHH:MM:SS)
+function localNowStr(){
+  const t=new Date();
+  const local=new Date(t.getTime()-t.getTimezoneOffset()*60000);
+  return local.toISOString().slice(0,19);
+}
+
+// ===== Reglas equipos (incluye NA)
+function enforcePastOnly(el){ const ref=analysisDate(); el.max=fmtDate(ref); el.removeAttribute('min'); if(el.value && parseDate(el.value)>ref){ el.value=fmtDate(ref); alert('Fecha de servicio no puede ser posterior a la fecha de análisis.'); } }
+function enforceFutureOnly(el){ const ref=analysisDate(); el.min=fmtDate(ref); if(el.value && parseDate(el.value)<=ref){ const next=new Date(ref); next.setDate(next.getDate()+1); el.value=fmtDate(next); alert('La fecha de próximo servicio debe ser posterior a la fecha de análisis.'); } }
+function updateEquipStatus(){
+  const ref=analysisDate();
+  $$('#equipBody tr').forEach(tr=>{
+    const servSel = tr.querySelector('select[data-field$="_servicio"]');
+    const fserv = tr.querySelector('input[data-field$="_fserv"]');
+    const fprox = tr.querySelector('input[data-field$="_fprox"]');
+    const estSel = tr.querySelector('select.estatus-auto');
+    if(!servSel || !estSel) return;
+    const servicio = (servSel.value||'').trim();
+    if(servicio === 'NA'){
+      [fserv,fprox].forEach(inp=>{ if(!inp) return; inp.value=''; inp.placeholder='NA'; inp.disabled=true; });
+      if(![...estSel.options].some(o=>o.textContent==='NA')){ const opt=document.createElement('option'); opt.textContent='NA'; estSel.appendChild(opt); }
+      estSel.disabled=false; estSel.value='NA'; estSel.disabled=true; return;
+    }
+    [fserv,fprox].forEach(inp=>{ if(!inp) return; inp.disabled=false; if(inp.placeholder==='NA') inp.placeholder=''; });
+    const d=parseDate(fprox?.value);
+    estSel.value = (!d)? '' : (d>ref?'Vigente':'No vigente');
+    if(fserv) enforcePastOnly(fserv);
+    if(fprox) enforceFutureOnly(fprox);
+  });
+}
+
+// ===== Ops compliance
+function updateOpsCompliance(){ const chip=$('#opsChip'); if(!chip) return; chip.classList.remove('pass','fail'); const v=parseFloat($('#vel_campana')?.value); if(isFinite(v)){ if(v>=0.36&&v<=0.54){ chip.textContent='Estatus: Cumple'; chip.classList.add('pass'); } else { chip.textContent='Estatus: No cumple'; chip.classList.add('fail'); } } else { chip.textContent='Estatus: —'; } }
+
+// ===== Cálculos
+function recalcVt(){ const n=parseFloat($('#n')?.value), v=parseFloat($('#v')?.value); const vt=(isFinite(n)&&isFinite(v))? n*v : NaN; const vtEl=$('#vt'); if(vtEl) vtEl.value=isFinite(vt)? Math.round(vt*100)/100 : ''; }
+function recalcResults(){ const P10=parseFloat($('#p_avg_10')?.value), P25=parseFloat($('#p_avg_25')?.value), VA=parseFloat($('#va')?.value), Vt=parseFloat($('#vt')?.value), n=parseFloat($('#n')?.value); let r10=NaN,r25=NaN; if([P10,VA,Vt,n].every(x=>isFinite(x)&&x!==0)) r10=Math.abs((P10/VA)*(Vt/n)); if([P25,VA,Vt,n].every(x=>isFinite(x)&&x!==0)) r25=Math.abs((P25/VA)*(Vt/n)); const fmtInt=v=>isFinite(v)?Math.abs(Math.round(v)):'—'; $('#res_10_final')&&( $('#res_10_final').value=fmtInt(r10) ); $('#res_25_final')&&( $('#res_25_final').value=fmtInt(r25) ); $('#res10_out')&&( $('#res10_out').textContent=fmtInt(r10) ); $('#res25_out')&&( $('#res25_out').textContent=fmtInt(r25) ); const box=$('#resultsBox'); if(box){ box.classList.remove('pass','fail'); if(isFinite(r10)&&isFinite(r25)) box.classList.add((r10<=6000 && r25<=600)?'pass':'fail'); } }
+function updateBlancoCompliance(){
+  const b10=parseFloat($('#blanco_10')?.value), b25=parseFloat($('#blanco_25')?.value);
+  const chip=$('#blancoChip'); const btn=$('#btnSave'); if(!chip||!btn) return;
+  chip.classList.remove('pass','fail');
+  let ok=false;
+  if(isFinite(b10)&&isFinite(b25)){
+    ok=(b10<=10 && b25<=2);
+    chip.textContent= ok?'Cumple':'No cumple';
+    chip.classList.add(ok?'pass':'fail');
+  } else {
+    chip.textContent='—';
+  }
+  if(PREVIEW){
+    btn.disabled=false; btn.title='Guardar (preview activo)';
+  } else {
+    btn.disabled=!ok; btn.title= ok? 'Guardar en este navegador' : 'Bloqueado: Blanco no cumple (≤10 y ≤2).';
+  }
+}
+
+// ===== Sonicación (segundos, opcional)
+function setNowDT(el){ const n=localNowStr(); if(!el) return; el.readOnly=true; el.min=n; el.max=n; el.value=n; }
+function bindSonic(){
+  const s=$('#btnMarkStart');
+  if(s) s.onclick=()=>{ setNowDT($('#t_son_i')); updateSeals(); };
+  const e=$('#btnMarkEnd');
+  if(e) e.onclick=()=>{
+    const i=$('#t_son_i')?.value;
+    setNowDT($('#t_son_f'));
+    const f=$('#t_son_f')?.value;
+    if(i&&f){
+      const secs=Math.max(0, Math.round((new Date(f)-new Date(i))/1000));
+      const dur=$('#t_son_dur');
+      if(dur) dur.value=String(secs);
+    }
+    updateSeals();
+  };
+}
+
+// ===== Validaciones requeridas
+function _val(v){ return v!==undefined && v!==null && String(v).trim()!==''; }
+function validateRequiredFields(action){
+  const missing=[];
+  // Identificación
+  if(!_val($('[data-field="folio"]').value)) missing.push('Folio');
+  if(!_val($('#cliente').value)) missing.push('Cliente');
+  if(!_val($('[data-field="producto"]').value)) missing.push('Producto');
+  if(!_val($('[data-field="prueba"]').value)) missing.push('Prueba');
+  if(!_val($('[data-field="ref_biblio"]').value)) missing.push('Referencia bibliográfica');
+  // Inicio del análisis
+  if(!_val($('#fecha_inicio').value)) missing.push('Fecha de inicio');
+  if(!_val($('#hora_inicio').value)) missing.push('Hora de inicio');
+  // Materiales
+  if(!_val($('[data-field="mat_verif_fecha"]').value)) missing.push('Fecha de verificación de material');
+  // Lectura de blanco
+  if(!_val($('#blanco_10').value)) missing.push('Blanco ≥10 µm');
+  if(!_val($('#blanco_25').value)) missing.push('Blanco ≥25 µm');
+  // Preparación de muestra
+  if(!_val($('#n').value)) missing.push('Número de muestras (n)');
+  if(!_val($('#v').value)) missing.push('Volumen por muestra (mL)');
+  if(!_val($('#vt').value)) missing.push('Volumen total calculado (Vt)');
+  if(!_val($('#p_avg_10').value)) missing.push('P promedio muestra ≥10 µm');
+  if(!_val($('#p_avg_25').value)) missing.push('P promedio muestra ≥25 µm');
+  if(!_val($('#va').value)) missing.push('VA (mL)');
+  // Operacionales
+  if(!_val($('#vel_campana').value)) missing.push('Velocidad de campana de flujo');
+
+  // Sonicación OPCIONAL:
+  // Si el usuario capturó cualquiera de los tres (inicio/fin/duración), entonces exigir los tres.
+  const tsi=$('#t_son_i')?.value || '';
+  const tsf=$('#t_son_f')?.value || '';
+  const tsd=$('#t_son_dur')?.value || '';
+  if((tsi || tsf || tsd) && !(tsi && tsf && _val(tsd))){
+    missing.push('Sonicación: completa inicio, fin y duración, o deja todos vacíos.');
+  }
+
+  // Equipos (todas las filas): servicio y fechas si aplica
+  $$('#equipBody tr').forEach((tr,idx)=>{
+    const r=idx+1;
+    const serv=tr.querySelector('select[data-field$="_servicio"]');
+    const fserv=tr.querySelector('input[data-field$="_fserv"]');
+    const fprox=tr.querySelector('input[data-field$="_fprox"]');
+    if(!serv || !serv.value) missing.push(`Equipo ${r}: Servicio`);
+    else if(serv.value!=='NA'){
+      if(!_val(fserv?.value)) missing.push(`Equipo ${r}: Fecha de servicio`);
+      if(!_val(fprox?.value)) missing.push(`Equipo ${r}: Fecha próximo servicio`);
+    }
+  });
+
+  // Resultados automáticos
+  if(!_val($('#res_10_final').value)) missing.push('Resultado ≥10 µm');
+  if(!_val($('#res_25_final').value)) missing.push('Resultado ≥25 µm');
+
+  // Restricciones extra por acción
+  if(action==='lock'){
+    if(!_val($('#fin_analisis').value)) missing.push('Fecha/hora de firma del analista');
+  }
+  return {ok: missing.length===0, missing};
+}
+function alertMissing(missing){
+  if(!missing.length) return;
+  alert('Faltan datos obligatorios:\n\n- '+missing.join('\n- ')+'\n\nCompleta estos campos para continuar.');
+}
+
+// ===== Datos / Hash / Auditoría
+function gather(){ const d={}; $$('[data-field]').forEach(el=> d[el.getAttribute('data-field')] = el.value ); try{ d.sign_analista=$('#signA')?.toDataURL(); d.sign_revisor=$('#signR')?.toDataURL(); }catch(_){ } return d; }
+async function updateSeals(){ const h=await sha256Hex(JSON.stringify(gather())); const hashEl=$('#hash'); if(hashEl) hashEl.value=h; const chain=SafeLS.getItem(AUDIT); const chainEl=$('#chain'); if(chainEl) chainEl.value = chain? JSON.parse(chain).slice(-1)[0]?.hash || '' : ''; }
+function logAudit(action, detail){ const now=new Date(); const when=new Date(now.getTime()-now.getTimezoneOffset()*60000).toISOString().replace('T',' ').slice(0,19); const meta=JSON.parse(SafeLS.getItem(LOCK_META)||'{}'); const user=meta.user || ($('#analista')?.value||'local-user'); const cliente=$('#cliente')?.value||''; const finicio=$('#fecha_inicio')?.value||''; const extra=[cliente?`Cliente: ${cliente}`:'', finicio?`F.Inicio: ${finicio}`:'', meta.motivo?`Motivo: ${meta.motivo}`:'', meta.fecha?`Fecha acción: ${meta.fecha}`:''].filter(Boolean).join(' | '); const row={when,user,action,detail:(detail?detail+' | ':'')+extra,hash:$('#hash')?.value||''}; const list=JSON.parse(SafeLS.getItem(AUDIT)||'[]'); list.push(row); SafeLS.setItem(AUDIT, JSON.stringify(list)); renderAudit(); }
+function renderAudit(){ const tb=$('#auditTable'); if(!tb) return; tb.innerHTML=''; const list=JSON.parse(SafeLS.getItem(AUDIT)||'[]'); list.forEach(it=>{ const tr=document.createElement('tr'); tr.innerHTML=`<td>${it.when}</td><td>${it.user}</td><td>${it.action}</td><td>${it.detail||''}</td><td class="hash-full">${it.hash}</td>`; tb.appendChild(tr); }); const chainEl=$('#chain'); if(chainEl) chainEl.value=list.length? list[list.length-1].hash : ''; const badge=$('#badgeCount'); if(badge) badge.textContent='Archivados: '+list.length; }
+
+// ===== Persistencia
+function doSave(){
+  const v=validateRequiredFields('save');
+  if(!v.ok){ alertMissing(v.missing); return; }
+  if($('#btnSave')?.disabled){ alert('No se puede guardar: el Blanco no cumple (≥10 µm ≤10 y ≥25 µm ≤2).'); return; }
+  SafeLS.setItem(STORE, JSON.stringify(gather()));
+  logAudit('Guardar','Bitácora guardada en navegador');
+}
+function doLoad(){ const s=SafeLS.getItem(STORE); if(!s){ alert('Sin datos guardados.'); return; } const d=JSON.parse(s); $$('[data-field]').forEach(el=>{ const k=el.getAttribute('data-field'); if(k in d) el.value=d[k]; }); recalcVt(); recalcResults(); updateOpsCompliance(); updateEquipStatus(); updateBlancoCompliance(); updateSeals(); logAudit('Cargar','Bitácora cargada'); }
+function doClear(){ if(!confirm('¿Deseas borrar todos los campos y firmas? Esta acción no se puede deshacer.')) return; $$('input, textarea, select').forEach(el=>{ if(el.type!=='button'){ el.value=''; }}); clearSignature('signA'); clearSignature('signR'); SafeLS.removeItem(STORE); logAudit('Limpiar','Campos borrados'); recalcVt(); recalcResults(); updateOpsCompliance(); updateEquipStatus(); updateBlancoCompliance(); updateSeals(); }
+
+// ===== Equipos (agregar / borrar)
+function addEquipRow(){ if(SafeLS.getItem(LOCK)==='1'){ alert('Bitácora bloqueada: no es posible agregar filas.'); return; } const tb=$('#equipBody'); const idx=tb.querySelectorAll('tr').length+1; const tr=document.createElement('tr'); tr.innerHTML=`
+  <td><input data-field="eq_${idx}_nombre"></td>
+  <td><input data-field="eq_${idx}_clave"></td>
+  <td><select data-field="eq_${idx}_servicio"><option></option><option>Calificación</option><option>Verificación</option><option>Calibración</option><option>NA</option></select></td>
+  <td><input type="date" data-field="eq_${idx}_fserv" data-past-only></td>
+  <td><input type="date" data-field="eq_${idx}_fprox" data-future-only></td>
+  <td><select data-field="eq_${idx}_estatus" class="estatus-auto" disabled><option value=""></option><option>Vigente</option><option>No vigente</option><option>NA</option></select></td>`;
+  tb.appendChild(tr);
+  tr.querySelectorAll('input[data-past-only]').forEach(enforcePastOnly);
+  tr.querySelectorAll('input[data-future-only]').forEach(enforceFutureOnly);
+  const servSel = tr.querySelector('select[data-field$="_servicio"]'); if(servSel) servSel.addEventListener('change', updateEquipStatus);
+  const fserv = tr.querySelector('input[data-field$="_fserv"]'); const fprox = tr.querySelector('input[data-field$="_fprox"]'); [fserv,fprox].forEach(inp=>{ if(inp){ inp.addEventListener('change', updateEquipStatus); }});
+  updateEquipStatus(); logAudit('Agregar equipo',`Fila ${idx}`);
+}
+function delEquipRow(){ if(SafeLS.getItem(LOCK)==='1'){ alert('Bitácora bloqueada: no es posible eliminar filas.'); return; } const tb=$('#equipBody'); const rows=tb.querySelectorAll('tr'); if(rows.length<=1){ alert('Debe permanecer al menos una fila de equipos.'); return; } tb.removeChild(rows[rows.length-1]); updateEquipStatus(); logAudit('Eliminar equipo','Última fila eliminada'); }
+
+// ===== ALCOA+: Bloqueo con captura
+function promptAuth(action){
+  const user = prompt(`[${action}] Nombre del usuario:`, ($('#analista')?.value||'').trim());
+  if(user===null || user.trim()==='') return null;
+  const motivo = prompt(`[${action}] Motivo:`);
+  if(motivo===null || motivo.trim()==='') return null;
+  const fecha = prompt(`[${action}] Fecha (AAAA-MM-DD HH:MM)`, new Date(new Date()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,16).replace('T',' '));
+  if(fecha===null || fecha.trim()==='') return null;
+  const meta={user:user.trim(), motivo:motivo.trim(), fecha:fecha.trim()};
+  SafeLS.setItem(LOCK_META, JSON.stringify(meta));
+  return meta;
+}
+function setLockedUI(locked){
+  $$('input, textarea, select, button').forEach(el=>{
+    const allow = ['btnHistory','btnExportJSON','btnCorrection','btnPrint'];
+    const id = el.id||'';
+    if(locked){ if(allow.includes(id)) el.disabled=false; else el.disabled=true; }
+    else { if(id==='btnSave'){ const b10=parseFloat($('#blanco_10')?.value); const b25=parseFloat($('#blanco_25')?.value); el.disabled=!(isFinite(b10)&&isFinite(b25)&&b10<=10&&b25<=2); } else el.disabled=false; }
+  });
+  ['signA','signR'].forEach(cid=>{ const c=$('#'+cid); if(!c) return; c.style.pointerEvents = locked? 'none':'auto'; c.style.opacity = locked? '0.7':'1'; });
+}
+
+// ===== SHA-256
+async function sha256Hex(str){
+  try{ if (window.crypto && crypto.subtle && typeof TextEncoder!=='undefined'){ const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str)); return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join(''); } }
+  catch(_){ /* fallback abajo */ }
+  function rrot(n,x){ return (x>>>n)|(x<<(32-n)); }
+  function toHex(n){ return ('00000000'+(n>>>0).toString(16)).slice(-8); }
+  const K=[1116352408,1899447441,3049323471,3921009573,961987163,1508970993,2453635748,2870763221,3624381080,310598401,607225278,1426881987,1925078388,2162078206,2614888103,3248222580,3835390401,4022224774,264347078,604807628,770255983,1249150122,1555081692,1996064986,2554220882,2821834349,2952996808,3210313671,3336571891,3584528711,113926993,338241895,666307205,773529912,1294757372,1396182291,1695183700,1986661051,2177026350,2456956037,2730485921,2820302411,3259730800,3345764771,3516065817,3600352804,4094571909,275423344,430227734,506948616,659060556,883997877,958139571,1322822218,1537002063,1747873779,1955562222,2024104815,2227730452,2361852424,2428436474,2756734187,3204031479,3329325298];
+  function str2buf(s){ if(typeof TextEncoder!=='undefined') return new TextEncoder().encode(s); const arr=[]; for(let i=0;i<s.length;i++){ let c=s.charCodeAt(i); if(c<128){arr.push(c);} else if(c<2048){arr.push(192|c>>6,128|c&63);} else if(c<55296||c>=57344){arr.push(224|c>>12,128|c>>6&63,128|c&63);} else { i++; c=65536+((c&1023)<<10|(s.charCodeAt(i)&1023)); arr.push(240|c>>18,128|c>>12&63,128|c>>6&63,128|c&63);} } return new Uint8Array(arr); }
+  const msg=str2buf(str); const l=msg.length; const bitLen=l*8;
+  const with1=new Uint8Array(((l+9+63>>6)<<6)); with1.set(msg); with1[l]=0x80; const dv=new DataView(with1.buffer); dv.setUint32(with1.length-4, bitLen>>>0, false); dv.setUint32(with1.length-8, Math.floor(bitLen/2**32)>>>0, false);
+  let H=[1779033703,3144134277,1013904242,2773480762,1359893119,2600822924,528734635,1541459225];
+  const W=new Uint32Array(64);
+  for(let i=0;i<with1.length;i+=64){ for(let t=0;t<16;t++) W[t]=new DataView(with1.buffer,i+t*4,4).getUint32(0,false); for(let t=16;t<64;t++){ const s0=rrot(7,W[t-15])^rrot(18,W[t-15])^(W[t-15]>>>3); const s1=rrot(17,W[t-2])^rrot(19,W[t-2])^(W[t-2]>>>10); W[t]=(W[t-16]+s0+W[t-7]+s1)>>>0; } let [a,b,c,d,e,f,g,h]=H; for(let t=0;t<64;t++){ const S1=rrot(6,e)^rrot(11,e)^rrot(25,e); const ch=(e&f)^(~e&g); const temp1=(h+S1+ch+K[t]+W[t])>>>0; const S0=rrot(2,a)^rrot(13,a)^rrot(22,a); const maj=(a&b)^(a&c)^(b&c); const temp2=(S0+maj)>>>0; h=g; g=f; f=e; e=(d+temp1)>>>0; d=c; c=b; b=a; a=(temp1+temp2)>>>0; } H=[(H[0]+a)>>>0,(H[1]+b)>>>0,(H[2]+c)>>>0,(H[3]+d)>>>0,(H[4]+e)>>>0,(H[5]+f)>>>0,(H[6]+g)>>>0,(H[7]+h)>>>0]; }
+  return H.map(toHex).join('');
+}
+
+// ===== Firmas (botones)
+function bindSign(){
+  const a=$('#btnMarkSignA');
+  if(a) a.onclick=()=>{
+    const v=validateRequiredFields('signA');
+    if(!v.ok){ alertMissing(v.missing); return; }
+    setNowDT($('#fin_analisis'));
+    logAudit('Firma analista','Marcar firma (ahora)');
+    updateSeals();
+  };
+  const r=$('#btnMarkSignR'); if(r) r.onclick=()=>{ setNowDT($('#rev_dt')); logAudit('Firma revisor','Marcar firma (ahora)'); updateSeals(); };
+  const ca=$('#clrA'); if(ca) ca.onclick=()=>clearSignature('signA');
+  const cr=$('#clrR'); if(cr) cr.onclick=()=>clearSignature('signR');
+}
+
+// ===== DOM Ready
+document.addEventListener('DOMContentLoaded', ()=>{
+  // Historial
+  const _hist=$('#btnHistory'); if(_hist){ _hist.onclick=()=>{ try{ renderAudit(); }catch(e){} const t=$('#auditTable'); if(t){ t.scrollIntoView({behavior:'smooth', block:'start'}); } }; }
+  // Inicio ahora
+  function todayStr(){ const t=new Date(); return `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`; }
+  function nowTimeStr(){ const t=new Date(); return `${String(t.getHours()).padStart(2,'0')}:${String(t.getMinutes()).padStart(2,'0')}`; }
+  function markInicioAhora(){ const f=$('#fecha_inicio'); const h=$('#hora_inicio'); if(f){ const d=todayStr(); f.value=d; f.readOnly=true; } if(h){ const n=nowTimeStr(); h.value=n; h.readOnly=true; } updateEquipStatus(); updateSeals(); }
+  const _mi=$('#btnMarkInicio'); if(_mi) _mi.onclick=markInicioAhora;
+
+  // Header buttons
+  $('#btnSave')&&($('#btnSave').onclick=doSave);
+  $('#btnLoad')&&($('#btnLoad').onclick=doLoad);
+  $('#btnClear')&&($('#btnClear').onclick=doClear);
+  $('#btnNew')&&($('#btnNew').onclick=()=>{ if(!confirm('¿Deseas iniciar una nueva bitácora?')) return; SafeLS.removeItem(STORE); SafeLS.removeItem(AUDIT); SafeLS.removeItem(LOCK); SafeLS.removeItem(LOCK_META); location.reload(); });
+
+  // Lock / Corrección / Export
+  const _lockBtn=$('#btnLock'); if(_lockBtn){ _lockBtn.onclick=async()=>{
+    const v=validateRequiredFields('lock');
+    if(!v.ok){ alertMissing(v.missing); return; }
+    const meta = promptAuth('Bloquear y firmar'); if(!meta) return;
+    SafeLS.setItem(LOCK,'1'); const est=$('#estado'); if(est) est.value='Cerrada'; await updateSeals();
+    logAudit('Bloquear y firmar',`Usuario: ${meta.user}`); setLockedUI(true); alert('Bitácora cerrada (bloqueada).');
+  }; }
+  const _corrBtn=$('#btnCorrection'); if(_corrBtn){ _corrBtn.disabled=false; _corrBtn.onclick=()=>{ const meta = promptAuth('Nueva corrección'); if(!meta) return; SafeLS.removeItem(LOCK); const est=$('#estado'); if(est) est.value='Abierta'; logAudit('Nueva corrección',`Usuario: ${meta.user}`); setLockedUI(false); alert('Corrección habilitada. La bitácora está abierta.'); }; }
+  const _expBtn=$('#btnExportJSON'); if(_expBtn){ _expBtn.onclick=()=>{ const data=gather(); const audit=JSON.parse(SafeLS.getItem(AUDIT)||'[]'); const payload={exported_at:new Date().toISOString(), data, audit, lock: SafeLS.getItem(LOCK)||'0', lock_meta: JSON.parse(SafeLS.getItem(LOCK_META)||'{}')}; const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); const fol=data.folio?('BV_'+data.folio+'_'):'BV_'; a.download=fol+'export.json'; document.body.appendChild(a); a.click(); URL.revokeObjectURL(a.href); a.remove(); logAudit('Exportar JSON','Descarga'); }; }
+
+  // Materiales
+  const _mm=$('#btnMarkVerifMat'); if(_mm) _mm.onclick=()=>{ const fm=document.querySelector('[data-field="mat_verif_fecha"]'); if(fm){ const d=new Date(); const ds=fmtDate(d); fm.value=ds; fm.min=ds; fm.max=ds; fm.readOnly=true; updateSeals(); } };
+
+  // Sonicación y firmas
+  bindSonic(); bindSign(); attachSignPad('signA'); attachSignPad('signR');
+
+  // Inputs reactivos
+  $$('input,textarea,select').forEach(el=>{
+    el.addEventListener('input', ()=>{ recalcVt(); recalcResults(); updateOpsCompliance(); updateEquipStatus(); updateBlancoCompliance(); updateSeals(); });
+    el.addEventListener('change', ()=>{ recalcVt(); recalcResults(); updateOpsCompliance(); updateEquipStatus(); updateBlancoCompliance(); updateSeals(); });
+  });
+
+  // Equipos: agregar / borrar
+  $('#btnAddEquip')&&($('#btnAddEquip').onclick=addEquipRow);
+  $('#btnDelEquip')&&($('#btnDelEquip').onclick=delEquipRow);
+
+  // Inicialización
+  recalcVt(); recalcResults(); updateBlancoCompliance(); updateOpsCompliance(); updateEquipStatus(); updateSeals(); renderAudit();
+  setLockedUI(SafeLS.getItem(LOCK)==='1');
+  if(PREVIEW){ SafeLS.removeItem(LOCK); setLockedUI(false); const bs=$('#btnSave'); if(bs){ bs.disabled=false; bs.title='Guardar (preview activo)'; } }
+});
+
+// ======== Pruebas rápidas (auto-checks en consola) =========
+(function selfTests(){
+  console.assert(typeof bindSonic === 'function', 'bindSonic debe ser función');
+  console.assert(typeof sha256Hex === 'function', 'sha256Hex debe existir');
+  try{ updateBlancoCompliance(); }catch(e){ console.error('FALLO: updateBlancoCompliance', e); }
+})();
+
+// Reporte de errores global
+window.onerror=(msg,src,line,col,err)=>{ console.error('[JS ERROR]', msg, src, line+':'+col, err); };
+</script>
+</body>
+</html>
